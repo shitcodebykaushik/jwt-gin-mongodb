@@ -8,4 +8,8 @@
 - `http://localhost:8080/protected/admin` This is for the admin
 # Phase 2 
 - To support the RBAC authentication we need to modify the configuration.
-- 
+# Phase 3 
+- To build the multi-factor authentication .
+  - These are the security mechanisms that  requires the user to provide the two or more forms of verification to gain the access to an account or the system .
+  -  This will be done once we have the system of the frontend .
+  

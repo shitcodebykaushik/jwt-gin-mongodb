@@ -13,7 +13,9 @@ var userCollection *mongo.Collection
 
 func main() {
     // Initialize Gin router
-    router := gin.Default()
+    router := gin.Default() 
+     // Serve static HTML file for login
+
 
     // Connect to MongoDB
     client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://localhost:27017"))
