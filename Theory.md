@@ -1,0 +1,3 @@
+- It generted the token .
+- If the generation of the token is sucessfully completed then it simply means that it succeeded .  Here the login cre
+- When a cloud provider talks about an "instance" in the context of deployment, they are essentially referring to a virtual machine (VM) that runs your application or workload in the cloud.
