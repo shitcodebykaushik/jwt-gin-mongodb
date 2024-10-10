@@ -35,11 +35,12 @@ func main() {
     router.POST("/signup", SignupHandler)
     router.POST("/login", LoginHandler)
 
-    // Protected route group
+    // Protected route group with Role-Based Access Control
     protected := router.Group("/protected")
     protected.Use(AuthMiddleware())
     {
         protected.GET("/profile", ProfileHandler)  // Protected profile route
+        protected.GET("/admin", AdminHandler)      // Admin route, RBAC check required
     }
 
     // Run the server

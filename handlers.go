@@ -11,7 +11,7 @@ import (
     "github.com/dgrijalva/jwt-go"
 )
 
-// AuthMiddleware checks for a valid JWT token in the Authorization header
+// AuthMiddleware checks for a valid JWT token and handles Role-Based Access Control (RBAC)
 func AuthMiddleware() gin.HandlerFunc {
     return func(c *gin.Context) {
         tokenString := c.GetHeader("Authorization")
@@ -32,7 +32,7 @@ func AuthMiddleware() gin.HandlerFunc {
             if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
                 return nil, fmt.Errorf("unexpected signing method")
             }
-            return jwtSecret, nil // Use the jwtSecret from auth.go
+            return jwtSecret, nil
         })
 
         if err != nil || !token.Valid {
@@ -41,8 +41,41 @@ func AuthMiddleware() gin.HandlerFunc {
             return
         }
 
-        // Proceed to the next handler
+        // Extract roles from JWT claims
+        claims, ok := token.Claims.(jwt.MapClaims)
+        if !ok {
+            c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token claims"})
+            c.Abort()
+            return
+        }
+
+        c.Set("username", claims["username"])
+        c.Set("roles", claims["roles"])
+
         c.Next()
+    }
+}
+
+// RBAC Middleware to check if the user has the required role
+func RBACMiddleware(requiredRole string) gin.HandlerFunc {
+    return func(c *gin.Context) {
+        roles, exists := c.Get("roles")
+        if !exists {
+            c.JSON(http.StatusForbidden, gin.H{"error": "Roles not found"})
+            c.Abort()
+            return
+        }
+
+        userRoles := roles.([]string)
+        for _, role := range userRoles {
+            if role == requiredRole {
+                c.Next()
+                return
+            }
+        }
+
+        c.JSON(http.StatusForbidden, gin.H{"error": "You do not have access to this resource"})
+        c.Abort()
     }
 }
 
@@ -111,8 +144,8 @@ func LoginHandler(c *gin.Context) {
         return
     }
 
-    // Generate JWT token
-    token, err := GenerateJWT(user.Username)
+    // Generate JWT token with username and roles
+    token, err := GenerateJWT(user.Username, foundUser.Roles)
     if err != nil {
         c.JSON(http.StatusInternalServerError, gin.H{"error": "Error generating token"})
         return
@@ -124,4 +157,9 @@ func LoginHandler(c *gin.Context) {
 // Protected route handler (e.g., user profile or dashboard)
 func ProfileHandler(c *gin.Context) {
     c.JSON(http.StatusOK, gin.H{"message": "Welcome to your protected profile!"})
+}
+
+// AdminHandler is only accessible to users with the 'admin' role
+func AdminHandler(c *gin.Context) {
+    c.JSON(http.StatusOK, gin.H{"message": "Welcome Admin!"})
 }

@@ -7,9 +7,11 @@ import (
 
 var jwtSecret = []byte("your_secret_key")
 
-func GenerateJWT(username string) (string, error) {
+// GenerateJWT now takes both username and roles as parameters
+func GenerateJWT(username string, roles []string) (string, error) {
     token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
         "username": username,
+        "roles":    roles,  // Include roles in the JWT claims
         "exp":      time.Now().Add(time.Hour * 72).Unix(),
     })
 
@@ -20,3 +22,4 @@ func GenerateJWT(username string) (string, error) {
 
     return tokenString, nil
 }
+
